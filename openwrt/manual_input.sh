@@ -69,7 +69,7 @@ EOF
 
         while true; do
             # 下载并验证配置文件
-            if curl -L --connect-timeout 10 --max-time 30 "$FULL_URL" -o /etc/sing-box/config.json; then
+            if curl -A "v2ray" -L --connect-timeout 10 --max-time 30 "$FULL_URL" -o /etc/sing-box/config.json; then
                 echo "配置文件下载完成，并验证成功！"
                 if ! sing-box check -c /etc/sing-box/config.json; then
                     echo "配置文件验证失败"

@@ -122,7 +122,7 @@ echo "生成完整订阅链接: $FULL_URL"
 # 备份现有配置文件
 [ -f "/etc/sing-box/config.json" ] && cp /etc/sing-box/config.json /etc/sing-box/config.json.backup
 
-if curl -L --connect-timeout 10 --max-time 30 "$FULL_URL" -o /etc/sing-box/config.json; then
+if curl -A "v2ray" -L --connect-timeout 10 --max-time 30 "$FULL_URL" -o /etc/sing-box/config.json; then
     echo -e "${GREEN}配置文件更新成功!${NC}"
     if ! sing-box check -c /etc/sing-box/config.json; then
         echo -e "${RED}配置文件验证失败，恢复备份...${NC}"
