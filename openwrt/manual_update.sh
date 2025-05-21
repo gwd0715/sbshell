@@ -77,7 +77,6 @@ if [[ "$change_subscription" =~ ^[Yy]$ ]]; then
         echo "后端地址: $BACKEND_URL"
         echo "订阅地址: $SUBSCRIPTION_URL"
         echo "配置文件地址: $TEMPLATE_URL"
-        echo "用户代理: $USER_AGENT"
         read -rp "确认输入的配置信息？(y/n): " confirm_choice
         if [[ "$confirm_choice" =~ ^[Yy]$ ]]; then
             # 更新手动输入的配置文件
@@ -85,7 +84,6 @@ if [[ "$change_subscription" =~ ^[Yy]$ ]]; then
 BACKEND_URL=$BACKEND_URL
 SUBSCRIPTION_URL=$SUBSCRIPTION_URL
 TEMPLATE_URL=$TEMPLATE_URL
-USER_AGENT=$USER_AGENT
 EOF
 
             echo "手动输入的配置已更新"
@@ -104,7 +102,6 @@ else
     BACKEND_URL=$(grep BACKEND_URL "$MANUAL_FILE" 2>/dev/null | cut -d'=' -f2-)
     SUBSCRIPTION_URL=$(grep SUBSCRIPTION_URL "$MANUAL_FILE" 2>/dev/null | cut -d'=' -f2-)
     TEMPLATE_URL=$(grep TEMPLATE_URL "$MANUAL_FILE" 2>/dev/null | cut -d'=' -f2-)
-    USER_AGENT=$(grep USER_AGENT "$MANUAL_FILE" 2>/dev/null | cut -d'=' -f2-)
     if [ -z "$BACKEND_URL" ] || [ -z "$SUBSCRIPTION_URL" ] || [ -z "$TEMPLATE_URL" ]; then
         echo -e "${RED}订阅地址为空，请设置！${NC}"
         exit 1
@@ -114,7 +111,6 @@ else
     echo "后端地址: $BACKEND_URL"
     echo "订阅地址: $SUBSCRIPTION_URL"
     echo "配置文件地址: $TEMPLATE_URL"
-    echo "用户代理: $USER_AGENT"
 fi
 
 # 构建完整的配置文件URL
@@ -124,7 +120,7 @@ echo "生成完整订阅链接: $FULL_URL"
 # 备份现有配置文件
 [ -f "/etc/sing-box/config.json" ] && cp /etc/sing-box/config.json /etc/sing-box/config.json.backup
 
-if curl -A "$USER_AGENT" -L --connect-timeout 10 --max-time 30 "$FULL_URL" -o /etc/sing-box/config.json; then
+if curl -L --connect-timeout 10 --max-time 30 "$FULL_URL" -o /etc/sing-box/config.json; then
     echo -e "${GREEN}配置文件更新成功!${NC}"
     if ! sing-box check -c /etc/sing-box/config.json; then
         echo -e "${RED}配置文件验证失败，恢复备份...${NC}"

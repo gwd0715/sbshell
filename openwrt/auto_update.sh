@@ -16,7 +16,6 @@ cat > /etc/sing-box/update-singbox.sh <<EOF
 BACKEND_URL=\$(grep BACKEND_URL $MANUAL_FILE | cut -d'=' -f2-)
 SUBSCRIPTION_URL=\$(grep SUBSCRIPTION_URL $MANUAL_FILE | cut -d'=' -f2-)
 TEMPLATE_URL=\$(grep TEMPLATE_URL $MANUAL_FILE | cut -d'=' -f2-)
-USER_AGENT=\$(grep USER_AGENT $MANUAL_FILE | cut -d'=' -f2-)
 # 构建完整的配置文件URL
 FULL_URL="\${BACKEND_URL}/config/\${SUBSCRIPTION_URL}&file=\${TEMPLATE_URL}"
 
@@ -24,7 +23,7 @@ FULL_URL="\${BACKEND_URL}/config/\${SUBSCRIPTION_URL}&file=\${TEMPLATE_URL}"
 [ -f "/etc/sing-box/config.json" ] && cp /etc/sing-box/config.json /etc/sing-box/config.json.backup
 
 # 下载并验证新配置文件
-if curl -A "\$USER_AGENT" -L --connect-timeout 10 --max-time 30 "\$FULL_URL" -o /etc/sing-box/config.json; then
+if curl -L --connect-timeout 10 --max-time 30 "\$FULL_URL" -o /etc/sing-box/config.json; then
     if ! sing-box check -c /etc/sing-box/config.json; then
         echo "新配置文件验证失败，恢复备份..."
         [ -f "/etc/sing-box/config.json.backup" ] && cp /etc/sing-box/config.json.backup /etc/sing-box/config.json

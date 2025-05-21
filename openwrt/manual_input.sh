@@ -39,12 +39,6 @@ prompt_user_input() {
         fi
     fi
 
-    read -rp "请输入用户代理(回车使用默认值可留空): " USER_AGENT
-    if [ -z "$USER_AGENT" ]; then
-        USER_AGENT=$(grep USER_AGENT "$DEFAULTS_FILE" 2>/dev/null | cut -d'=' -f2-)
-        echo -e "${CYAN}使用默认用户代理: $USER_AGENT${NC}"
-    fi
-
 }
 
 while true; do
@@ -54,7 +48,6 @@ while true; do
     echo "后端地址: $BACKEND_URL"
     echo "订阅地址: $SUBSCRIPTION_URL"
     echo "配置文件地址: $TEMPLATE_URL"
-    echo "用户代理: $USER_AGENT"
     read -rp "确认输入的配置信息？(y/n): " confirm_choice
     if [[ "$confirm_choice" =~ ^[Yy]$ ]]; then
         # 更新手动输入的配置文件
@@ -62,7 +55,6 @@ while true; do
 BACKEND_URL=$BACKEND_URL
 SUBSCRIPTION_URL=$SUBSCRIPTION_URL
 TEMPLATE_URL=$TEMPLATE_URL
-USER_AGENT=$USER_AGENT
 EOF
 
         echo "手动输入的配置已更新"
@@ -77,7 +69,7 @@ EOF
 
         while true; do
             # 下载并验证配置文件
-            if curl -A "$USER_AGENT" -L --connect-timeout 10 --max-time 30 "$FULL_URL" -o /etc/sing-box/config.json; then
+            if curl -L --connect-timeout 10 --max-time 30 "$FULL_URL" -o /etc/sing-box/config.json; then
                 echo "配置文件下载完成，并验证成功！"
                 if ! sing-box check -c /etc/sing-box/config.json; then
                     echo "配置文件验证失败"
