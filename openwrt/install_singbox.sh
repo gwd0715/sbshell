@@ -35,12 +35,14 @@ start_service() {
     procd_set_param respawn
     procd_set_param stderr 1
     procd_set_param stdout 1
+    procd_add_dependency network
+    procd_add_reload_trigger firewall
     procd_close_instance
-    
-    # 等待服务完全启动
+}
+service_started() {
+    # 等待网络和路由准备好
     sleep 3
-    
-    # 读取模式并应用防火墙规则
+
     MODE=$(grep -oE '^MODE=.*' /etc/sing-box/mode.conf | cut -d'=' -f2)
     if [ "$MODE" = "TProxy" ]; then
         /etc/sing-box/scripts/configure_tproxy.sh
@@ -48,7 +50,6 @@ start_service() {
         /etc/sing-box/scripts/configure_tun.sh
     fi
 }
-
 stop_service() {
     procd_kill "$NAME" 2>/dev/null
 }
