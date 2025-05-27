@@ -43,10 +43,6 @@ REQUIRED_INTERFACES="eth0 eth2 sta1"
 
 start_service() {
     # Check if at least one required interface is up before starting
-    if ! check_interface_availability; then
-        logger -t "$NAME" "No required interfaces available (eth0, eth2, sta1) - delaying start"
-        return 1
-    fi
 
     procd_open_instance
     procd_set_param command "$PROG" run -c "$CONFIG_FILE"
@@ -64,19 +60,6 @@ start_service() {
     procd_close_instance
     
     logger -t "$NAME" "Service started successfully"
-}
-
-check_interface_availability() {
-    # Check if at least one of the required interfaces is up
-    for iface in $REQUIRED_INTERFACES; do
-        if ip link show "$iface" up >/dev/null 2>&1; then
-            logger -t "$NAME" "Interface $iface is available"
-            return 0  # At least one interface is up
-        fi
-    done
-    
-    logger -t "$NAME" "No required interfaces are available"
-    return 1  # No interfaces are up
 }
 
 service_triggers() {
