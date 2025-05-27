@@ -38,81 +38,59 @@ NAME=sing-box
 PROG=/usr/bin/sing-box
 CONFIG_FILE=/etc/sing-box/config.json
 
+# Define required interfaces
+REQUIRED_INTERFACES="eth0 eth2 sta1"
+
 start_service() {
+    # Check if at least one required interface is up before starting
+    if ! check_interface_availability; then
+        logger -t "$NAME" "No required interfaces available (eth0, eth2, sta1) - delaying start"
+        return 1
+    fi
+
     procd_open_instance
     procd_set_param command "$PROG" run -c "$CONFIG_FILE"
     procd_set_param respawn
     procd_set_param stderr 1
     procd_set_param stdout 1
     procd_set_param file "$CONFIG_FILE"  # Reload on config change
-    procd_set_param netdev "eth0"        # Depend on eth0 interface
+    
+    # Add netdev params to make procd track interface changes
+    # This enables procd to restart the service when interfaces change
+    for iface in $REQUIRED_INTERFACES; do
+        procd_set_param netdev "$iface"
+    done
+    
     procd_close_instance
     
-    # Post-startup configuration
-    (
-        # Wait for service to be ready
-        local timeout=10
-        local count=0
-        
-        while [ $count -lt $timeout ]; do
-            if pgrep -f "$PROG" > /dev/null 2>&1; then
-                configure_network_mode
-                exit 0
-            fi
-            sleep 1
-            count=$((count + 1))
-        done
-        
-        logger -t "$NAME" "Service failed to start within timeout"
-        exit 1
-    ) &
+    logger -t "$NAME" "Service started successfully"
+}
+
+check_interface_availability() {
+    # Check if at least one of the required interfaces is up
+    for iface in $REQUIRED_INTERFACES; do
+        if ip link show "$iface" up >/dev/null 2>&1; then
+            logger -t "$NAME" "Interface $iface is available"
+            return 0  # At least one interface is up
+        fi
+    done
+    
+    logger -t "$NAME" "No required interfaces are available"
+    return 1  # No interfaces are up
 }
 
 service_triggers() {
     procd_add_config_trigger "config.change" "sing-box" /etc/init.d/sing-box reload
     
-    # Add trigger for eth0 interface changes
-    procd_add_interface_trigger "interface.*.up" "eth0" /etc/init.d/sing-box restart
-}
-
-configure_network_mode() {
-    # Configure networking based on mode - called after service starts
-    if [ -f /etc/sing-box/mode.conf ]; then
-        local MODE
-        MODE=$(grep -oE '^MODE=.*' /etc/sing-box/mode.conf | cut -d'=' -f2)
-        case "$MODE" in
-            "TProxy")
-                logger -t "$NAME" "Applying TProxy firewall rules"
-                if ! /etc/sing-box/scripts/configure_tproxy.sh; then
-                    logger -t "$NAME" "ERROR: TProxy firewall rules failed - stopping service"
-                    /etc/init.d/sing-box stop
-                    return 1
-                fi
-                logger -t "$NAME" "TProxy firewall rules applied successfully"
-                ;;
-            "TUN")
-                logger -t "$NAME" "Applying TUN firewall rules"
-                if ! /etc/sing-box/scripts/configure_tun.sh; then
-                    logger -t "$NAME" "ERROR: TUN firewall rules failed - stopping service"
-                    /etc/init.d/sing-box stop
-                    return 1
-                fi
-                logger -t "$NAME" "TUN firewall rules applied successfully"
-                ;;
-        esac
-    fi
+    # Add triggers for all required interfaces
+    # Now that we use procd_set_param netdev, these triggers will work properly
+    for iface in $REQUIRED_INTERFACES; do
+        procd_add_interface_trigger "interface.*.up" "$iface" /etc/init.d/sing-box restart
+    done
 }
 
 stop_service() {
-    # Cleanup nftables rules when stopping
-    cleanup_firewall_rules
     logger -t "$NAME" "Service stopped"
-}
-
-cleanup_firewall_rules() {
-    # Clean up all nftables rules
-    logger -t "$NAME" "Cleaning up nftables rules"
-    /etc/sing-box/scripts/clean_nft.sh
 }
 
 reload_service() {
