@@ -39,7 +39,7 @@ PROG=/usr/bin/sing-box
 CONFIG_FILE=/etc/sing-box/config.json
 
 # Define required interfaces
-REQUIRED_INTERFACES="eth0 eth2 sta1"
+REQUIRED_INTERFACES="wan wwan tethering"
 
 start_service() {
     # Check if at least one required interface is up before starting
