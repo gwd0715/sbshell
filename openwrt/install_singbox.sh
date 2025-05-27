@@ -52,10 +52,7 @@ start_service() {
     procd_set_param file "$CONFIG_FILE"  # Reload on config change
     
     # Add netdev params to make procd track interface changes
-    # This enables procd to restart the service when interfaces change
-    for iface in $REQUIRED_INTERFACES; do
-        procd_set_param netdev "$iface"
-    done
+    procd_set_param netdev "$REQUIRED_INTERFACES"
     
     procd_close_instance
     
@@ -67,9 +64,11 @@ service_triggers() {
     
     # Add triggers for all required interfaces
     # Now that we use procd_set_param netdev, these triggers will work properly
+    procd_open_trigger
     for iface in $REQUIRED_INTERFACES; do
         procd_add_interface_trigger "interface.*.up" "$iface" /etc/init.d/sing-box restart
     done
+    procd_close_trigger
 }
 
 stop_service() {
