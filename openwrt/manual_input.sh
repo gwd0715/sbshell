@@ -3,11 +3,34 @@
 # 定义颜色
 CYAN='\033[0;36m'
 RED='\033[0;31m'
+GREEN='\033[0;32m'
 NC='\033[0m' # 无颜色
 
-# 手动输入的配置文件
+# 配置文件路径
+CONFIG_FILE="/etc/sing-box/config.json"
 MANUAL_FILE="/etc/sing-box/manual.conf"
 DEFAULTS_FILE="/etc/sing-box/defaults.conf"
+
+# 检查现有配置文件是否有效
+check_existing_config() {
+    if [ -f "$CONFIG_FILE" ]; then
+        echo -e "${CYAN}检测到现有配置文件: $CONFIG_FILE${NC}"
+        if sing-box check -c "$CONFIG_FILE" &>/dev/null; then
+            echo -e "${GREEN}当前配置文件验证通过${NC}"
+            read -rp "是否使用当前配置文件？(y/n): " use_existing
+            if [[ "$use_existing" =~ ^[Yy]$ ]]; then
+                echo -e "${GREEN}将使用现有配置文件，不进行更新${NC}"
+                exit 0
+            else
+                echo -e "${CYAN}将继续更新配置文件...${NC}"
+            fi
+        else
+            echo -e "${RED}当前配置文件验证失败，将进行更新${NC}"
+        fi
+    else
+        echo -e "${CYAN}未找到现有配置文件，将进行创建${NC}"
+    fi
+}
 
 # 获取当前模式
 MODE=$(grep -E '^MODE=' /etc/sing-box/mode.conf | sed 's/^MODE=//')
@@ -38,8 +61,10 @@ prompt_user_input() {
             exit 1
         fi
     fi
-
 }
+
+# 主程序
+check_existing_config
 
 while true; do
     prompt_user_input
@@ -69,13 +94,18 @@ EOF
 
         while true; do
             # 下载并验证配置文件
-            if curl -L --connect-timeout 10 --max-time 30 "$FULL_URL" -o /etc/sing-box/config.json; then
-                echo "配置文件下载完成，并验证成功！"
-                if ! sing-box check -c /etc/sing-box/config.json; then
-                    echo "配置文件验证失败"
-                    exit 1
+            if curl -L --connect-timeout 10 --max-time 30 "$FULL_URL" -o "$CONFIG_FILE"; then
+                echo "配置文件下载完成"
+                if sing-box check -c "$CONFIG_FILE"; then
+                    echo -e "${GREEN}配置文件验证成功！${NC}"
+                    break
+                else
+                    echo -e "${RED}配置文件验证失败${NC}"
+                    read -rp "是否重试下载？(y/n): " retry_choice
+                    if [[ "$retry_choice" =~ ^[Nn]$ ]]; then
+                        exit 1
+                    fi
                 fi
-                break
             else
                 echo "配置文件下载失败"
                 read -rp "下载失败，是否重试？(y/n): " retry_choice
