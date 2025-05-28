@@ -95,15 +95,13 @@ configure_tproxy_if_needed() {
     return 0  # No TProxy mode or no mode file - continue normally
 }
 service_triggers() {
-    procd_open_trigger
-
     procd_add_config_trigger "config.change" "sing-box" /etc/init.d/sing-box reload
-
+   
+    procd_open_trigger
     # Add triggers for all required interfaces
     for iface in $REQUIRED_INTERFACES; do
         procd_add_interface_trigger "interface.*.up" "$iface" /etc/init.d/sing-box restart
     done
-
     procd_close_trigger
 }
 
