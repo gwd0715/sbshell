@@ -28,56 +28,69 @@ fi
 
 cat << 'EOF' >> /etc/init.d/sing-box
 #!/bin/sh /etc/rc.common
-
 # OpenWrt init.d script for sing-box
 START=99
 STOP=10
 USE_PROCD=1
-
 NAME=sing-box
 PROG=/usr/bin/sing-box
 CONFIG_FILE=/etc/sing-box/config.json
 MODE_FILE=/etc/sing-box/mode.conf
 TPROXY_SCRIPT=/etc/sing-box/scripts/configure_tproxy.sh
-REQUIRED_INTERFACES="eth0 eth2 sta1"
+
+# Define physical interfaces for procd_set_param netdev
+PHYSICAL_INTERFACES="eth0 eth2 sta1"
+# Define logical interfaces for triggers and availability check
+LOGICAL_INTERFACES="wan wwan tethering"
 
 start_service() {
-    # Check if at least one required interface is up before starting
+    sleep 6
+    # Check if at least one required logical interface is up before starting
     if ! check_interface_availability; then
-        logger -t "$NAME" "No required interfaces available (wan, wwan, tethering) - delaying start"
+        logger -t "$NAME" "No required logical interfaces available (wan, wwan, tethering) - delaying start"
         return 1
     fi
-
+    
     # Check if TProxy mode is enabled and configure if needed BEFORE starting service
     if ! configure_tproxy_if_needed; then
         logger -t "$NAME" "TProxy configuration failed - aborting service start"
         return 1
     fi
-
+    
     procd_open_instance
+    procd_set_param user root
     procd_set_param command "$PROG" run -c "$CONFIG_FILE"
     procd_set_param respawn
     procd_set_param stderr 1
     procd_set_param stdout 1
     procd_set_param file "$CONFIG_FILE"  # Reload on config change
-    procd_set_param netdev $REQUIRED_INTERFACES
-
+    
+    # Add netdev param with physical device names to make procd track interface changes
+    # This enables procd to restart the service when physical interfaces change
+    procd_set_param netdev $PHYSICAL_INTERFACES
+    
     procd_close_instance
-
+    
     logger -t "$NAME" "Service started successfully"
 }
+
 check_interface_availability() {
-    # Check if at least one of the required interfaces is up
-    for iface in $REQUIRED_INTERFACES; do
-        if ip link show "$iface" up >/dev/null 2>&1; then
-            logger -t "$NAME" "Interface $iface is available"
-            return 0  # At least one interface is up
+    # Check if at least one logical interface has IP and connectivity
+    for iface in $LOGICAL_INTERFACES; do
+        if ubus call network.interface."$iface" status >/dev/null 2>&1; then
+            if ubus call network.interface."$iface" status | grep -q '"up": true' && \
+               ubus call network.interface."$iface" status | grep -q '"ipv4-address"'; then
+                # Also verify default route exists
+                if ip route | grep -q "^default"; then
+                    logger -t "$NAME" "Interface $iface is ready with IP and route"
+                    return 0
+                fi
+            fi
         fi
     done
-
-    logger -t "$NAME" "No required interfaces are available"
-    return 1  # No interfaces are up
+    return 1
 }
+
 configure_tproxy_if_needed() {
     # Check if mode file contains MODE=TProxy
     if [ -f "$MODE_FILE" ]; then
@@ -94,14 +107,14 @@ configure_tproxy_if_needed() {
     fi
     return 0  # No TProxy mode or no mode file - continue normally
 }
+
 service_triggers() {
     procd_add_config_trigger "config.change" "sing-box" /etc/init.d/sing-box reload
-   
-    procd_open_trigger
-    # Add triggers for all required interfaces
-    for iface in $REQUIRED_INTERFACES; do
+    procd_open_trigger   
+    # Add triggers for all required logical interfaces
+    for iface in $LOGICAL_INTERFACES; do
         procd_add_interface_trigger "interface.*.up" "$iface" /etc/init.d/sing-box restart
-    done
+    done  
     procd_close_trigger
 }
 
@@ -117,9 +130,10 @@ reload_service() {
     stop
     start
 }
+
 # Custom restart function to add logging
 restart() {
-    logger -t "$NAME" "Interface up detected - restarting service"
+    logger -t "$NAME" "Interface change detected - restarting service"
     stop
     start
 }
