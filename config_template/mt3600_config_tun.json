@@ -25,15 +25,20 @@
  {
    "servers": 
    [
-     {"tag": "mosdns", "address": "tcp://127.0.0.1:5335", "detour": "➡️ 直连"}
+     {"tag": "dns_direct", "address": "101.198.198.198", "address_strategy": "ipv4_only", "strategy": "ipv4_only", "detour": "➡️ 直连"},
+     {"tag": "dns_proxy", "address": "tls://8.8.8.8", "address_strategy": "ipv4_only", "strategy": "ipv4_only", "detour": "🚀 节点选择"}
    ],
    "rules": 
    [
-     {"outbound": "any", "server": "mosdns", "disable_cache": true}
+     {"outbound": "any", "server": "dns_direct", "disable_cache": true},
+     {"clash_mode": "Direct", "server": "dns_direct"},
+     {"clash_mode": "Global", "server": "dns_proxy"},
+     {"domain_keyword": ["pttime","pthome","icc2022"], "server": "dns_direct"},
+     {"rule_set": "geosite-cn", "server": "dns_direct"},
+     {"rule_set": "geosite-geolocation-!cn", "server": "dns_proxy"}
    ],
-   "final": "mosdns",
-   "disable_cache": true,
-   "strategy": "prefer_ipv4"
+   "final": "dns_proxy",
+   "strategy": "ipv4_only"
 },
 
 "inbounds": [

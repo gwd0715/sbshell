@@ -1,8 +1,9 @@
 # Sbshell
-⚠️⚠️请注意禁止搬运到中国大陆，请遵守属地法律法律⚠️⚠️  
-Sbshell 是一款针对 官方sing-box 的辅助运行脚本，旨在解决官方sing-box的使用不便：
 
-- **系统支持**：支持系统为Debian/Ubuntu/Armbian以及OpenWrt。
+⚠️⚠️ 请注意禁止搬运到中国大陆，请遵守属地法律法律 ⚠️⚠️  
+Sbshell 是一款针对 官方 sing-box 的辅助运行脚本，旨在解决官方 sing-box 的使用不便：
+
+- **系统支持**：支持系统为 Debian/Ubuntu/Armbian 以及 OpenWrt。
 - **辅助运行**：保持 sing-box 以官方裸核形式运行，追求极致精简与性能。
 - **双模支持**：兼容 TUN 和 TProxy 模式，可随时一键切换，灵活适应不同需求。
 - **版本管理**：支持一键切换稳定版与测试版内核，检测并更新至最新版本，操作简单高效。
@@ -12,39 +13,42 @@ Sbshell 是一款针对 官方sing-box 的辅助运行脚本，旨在解决官�
 - **网络配置**：内置网络配置模块，可快速修改系统 IP、网关和 DNS，自动提示是否需要调整。
 - **便捷命令**：集成常用命令，避免手动查找与复制的繁琐。
 - **在线更新**：支持脚本在线更新，始终保持最新版本。
-- **面板更新**：支持clash面板在线更新/切换。
+- **面板更新**：支持 clash 面板在线更新/切换。
 
 ## 设备支持：
 
-目前支持系统为deiban/ubuntu/armbian以及openwrt！
+目前支持系统为 deiban/ubuntu/armbian 以及 openwrt！
 
-## 一键脚本：(请自行安装curl和bash，如果缺少的话)
+## 一键脚本：(请自行安装 curl 和 bash，如果缺少的话)
+
 ```
-bash <(curl -sL https://gh-proxy.com/https://raw.githubusercontent.com/qljsyph/sbshell/refs/heads/main//sbshall.sh)
+bash <(curl -sL https://gh-proxy.com/https://raw.githubusercontent.com/gwd0715/sbshell/refs/heads/main//sbshall.sh)
 ```
+
 - 初始化运行结束，输入“**sb**”进入菜单
-- 目前支持系统为deiban/ubuntu/armbian/openwrt。  
-- 防火墙仅支持nftables，不支持iptables。
+- 目前支持系统为 deiban/ubuntu/armbian/openwrt。
+- 防火墙仅支持 nftables，不支持 iptables。
 
-### 系统信息自动显示美化脚本： 
+### 系统信息自动显示美化脚本：
+
 ```
-bash <(curl -sL https://gh-proxy.com/https://raw.githubusercontent.com/qljsyph/DPInfo-script/refs/heads/main/auto-sysinfo.sh)
+bash <(curl -sL https://gh-proxy.com/https://raw.githubusercontent.com/gwd0715/DPInfo-script/refs/heads/main/auto-sysinfo.sh)
 ```
-  执行后每次进入ssh会自动显示很多必要信息！
-  仓库：  
-  https://github.com/qljsyph/DPInfo-script
+
+执行后每次进入 ssh 会自动显示很多必要信息！
+仓库：  
+ https://github.com/gwd0715/DPInfo-script
 
 ## 适配配置文件：
 
 ### 稳定版(1.11)：  
+
 tproxy：  
-https://gh-proxy.com/https://raw.githubusercontent.com/qljsyph/sbshell/refs/heads/main/config_template/config_tproxy.json  
+https://gh-proxy.com/https://raw.githubusercontent.com/gwd0715/sbshell/refs/heads/main/config_template/config_tproxy.json
 
 tun：  
-https://gh-proxy.com/https://raw.githubusercontent.com/qljsyph/sbshell/refs/heads/main/config_template/config_tun.json  
+https://gh-proxy.com/https://raw.githubusercontent.com/gwd0715/sbshell/refs/heads/main/config_template/config_tun.json
 
 ## 其他问题：
 
-**请查看[wiki](https://github.com/qljsyph/sbshell/wiki)**  
-
-
+**请查看[wiki](https://github.com/qljsyph/sbshell/wiki)**

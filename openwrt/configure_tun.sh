@@ -22,29 +22,26 @@ if [ "$MODE" = "TUN" ]; then
     # 清理 TProxy 模式的防火墙规则
     clearTProxyRules
 
-    # 确保目录存在
-    mkdir -p /etc/sing-box/tun
+    # 等待 sing-box 自动创建 nftables 表
+    RETRY=10
+    while ! nft list tables | grep -q 'inet sing-box'; do
+        echo "等待 inet sing-box 表创建..."
+        sleep 1
+        RETRY=$((RETRY - 1))
+        [ "$RETRY" -le 0 ] && echo "超时退出，sing-box 的表未创建。" && exit 1
+    done
 
-    # 设置 TUN 模式的具体配置
-    cat > /etc/sing-box/tun/nftables.conf <<EOF
-table inet sing-box {
-    chain input {
-        type filter hook input priority 0; policy accept;
-    }
-    chain forward {
-        type filter hook forward priority 0; policy accept;
-    }
-    chain output {
-        type filter hook output priority 0; policy accept;
-    }
-}
-EOF
+    # 创建白名单集合（如果尚未存在）
+    nft list table inet sing-box | grep -q 'whitelist_host_ipv4' || \
+    nft add set inet sing-box whitelist_host_ipv4 { type ipv4_addr\; }
 
-    # 应用防火墙规则
-    nft -f /etc/sing-box/tun/nftables.conf
+    # 添加白名单 IP（避免重复添加）
+    nft add element inet sing-box whitelist_host_ipv4 { 192.168.3.3, 192.168.3.4 } 2>/dev/null
 
-    # 持久化防火墙规则
-    nft list ruleset > /etc/nftables.conf
+    # 插入规则
+    nft insert rule inet sing-box output ip saddr @whitelist_host_ipv4 return
+    nft insert rule inet sing-box output_udp_icmp ip saddr @whitelist_host_ipv4 return
+    nft insert rule inet sing-box prerouting ip saddr @whitelist_host_ipv4 return
 
     echo "TUN 模式的防火墙规则已应用。"
 else
