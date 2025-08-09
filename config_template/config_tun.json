@@ -79,7 +79,7 @@
       }
     ],
     "final": "dns_proxy",
-    "strategy": "ipv4_only",
+    "strategy": "prefer_ipv4",
     "disable_cache": false,
     "cache_capacity": 30000
   },
@@ -88,11 +88,11 @@
     {
       "tag": "tun-in",
       "type": "tun",
-      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
+      "address": ["172.19.0.1/30"],
       "mtu": 9000,
       "auto_route": true,
       "auto_redirect": true,
-      "route_address": ["0.0.0.0/1", "128.0.0.0/1", "::/1", "8000::/1"],
+      "route_address": ["0.0.0.0/1", "128.0.0.0/1"],
       "route_exclude_address": [
         "192.168.0.0/16",
         "172.16.0.0/16",
@@ -316,7 +316,7 @@
       { "clash_mode": "global", "outbound": "GLOBAL" },
       { "port_range": "3000:", "outbound": "➡️ 直连" },
       {
-        "domain_keyword": ["pttime", "pthome", "icc2022"],
+        "domain_keyword": ["pttime", "pthome", "m-team", "iyuu", "fixtime"],
         "outbound": "➡️ 直连"
       },
       {
