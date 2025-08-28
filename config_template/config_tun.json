@@ -79,7 +79,7 @@
       }
     ],
     "final": "dns_proxy",
-    "strategy": "prefer_ipv4",
+    "strategy": "ipv4_only",
     "disable_cache": false,
     "cache_capacity": 30000
   },
@@ -316,7 +316,14 @@
       { "clash_mode": "global", "outbound": "GLOBAL" },
       { "port_range": "3000:", "outbound": "➡️ 直连" },
       {
-        "domain_keyword": ["pttime", "pthome", "m-team", "iyuu", "fixtime"],
+        "domain_keyword": [
+          "pttime",
+          "pthome",
+          "m-team",
+          "iyuu",
+          "fixtime",
+          "mushroomtracker"
+        ],
         "outbound": "➡️ 直连"
       },
       {
