@@ -1,9 +1,29 @@
 {
+    "log": {
+      "disabled": true,
+      "level": "info",
+      "timestamp": true
+    },
+     "experimental": {
+      "cache_file": {
+        "enabled": true,
+        "path": "/etc/momo/run/cache.db",
+        "store_fakeip": false
+      },
+      "clash_api": {
+        "external_controller": "0.0.0.0:9095",
+        "external_ui": "/etc/sing-box/ui",
+        "external_ui_download_url": "https://gh-proxy.com/https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip",
+        "external_ui_download_detour": "➡️ 直连",
+        "secret": "",
+        "default_mode": "rule"
+      }
+    },
     "dns": {
       "servers": [
-        {"tag": "local", "type": "udp", "server": "223.5.5.5"},
+        {"tag": "local", "type": "https", "server": "223.5.5.5"},
         {"tag": "public", "type": "https", "server": "dns.alidns.com", "domain_resolver": "local"},
-        {"tag": "foreign", "type": "https", "server": "dns.google", "domain_resolver": "local"},
+        {"tag": "foreign", "type": "https", "server": "dns.google", "domain_resolver": "local"}
       ],
       "rules": [
         {"clash_mode": "direct", "server": "local"},
@@ -14,6 +34,22 @@
       "strategy": "ipv4_only",
       "independent_cache": true
     },
+    "inbounds": [
+      {
+        "tag": "tun-in",
+        "type": "tun",
+        "address": ["172.19.0.1/30"],
+        "mtu": 9000,
+        "auto_route": true,
+        "auto_redirect": true,
+        "strict_route": true,
+        "route_address": ["0.0.0.0/1", "128.0.0.0/1"],
+        "route_exclude_address": ["192.168.0.0/16", "49.7.106.94/32", "39.156.134.92/32"],
+        "route_exclude_address_set": ["geoip-cn"],
+        "udp_timeout": "5m",
+        "stack": "system"
+      }
+    ],
     "outbounds": [
       {"tag": "🚀 默认代理", "type": "selector", "outbounds": ["🇭🇰 香港手动", "🇯🇵 日本手动", "🇸🇬 狮城手动", "🇺🇲 美国手动", "🐸 手动选择", "♻️ 自动选择"]},
       {"tag": "🧠 AI", "type": "selector", "outbounds": ["🇯🇵 日本手动", "🇸🇬 狮城手动", "🇺🇲 美国手动"]},
@@ -92,45 +128,5 @@
       "final": "🐠 漏网之鱼",
       "auto_detect_interface": true,
       "default_domain_resolver": {"server": "public"}
-    },
-    "inbounds": [
-      {
-        "tag": "tun-in",
-        "type": "tun",
-        "address": [
-          "172.19.0.1/30"
-        ],
-        "mtu": 9000,
-        "auto_route": true,
-        "auto_redirect": true,
-        "strict_route": true,
-        "route_address": ["0.0.0.0/1", "128.0.0.0/1"],
-        "route_exclude_address": [
-          "192.168.0.0/16",
-          "49.7.106.94/32",
-          "39.156.134.92/32"
-        ],
-        "route_exclude_address_set": ["geoip-cn"]
-      }
-    ],
-    "experimental": {
-      "cache_file": {
-        "enabled": true,
-        "path": "/etc/momo/run/cache.db",
-        "store_fakeip": false
-      },
-      "clash_api": {
-        "external_controller": "0.0.0.0:9095",
-        "external_ui": "/etc/sing-box/ui",
-        "external_ui_download_url": "https://gh-proxy.com/https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip",
-        "external_ui_download_detour": "➡️ 直连",
-        "secret": "",
-        "default_mode": "rule"
-      }
-    },
-    "log": {
-      "disabled": true,
-      "level": "info",
-      "timestamp": true
     }
 }
