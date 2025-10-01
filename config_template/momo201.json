@@ -152,8 +152,8 @@
       }
     },
     "log": {
-      "disabled": false,
-      "level": "info",
+      "disabled": true,
+      "level": "warning",
       "timestamp": true
     }
   }
